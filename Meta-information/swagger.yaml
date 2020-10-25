@@ -1,0 +1,265 @@
+openapi: 3.0.1
+info:
+  title: Validate Biller
+  description: Validate billers and merchants that used Vooma (Vooma outbound)
+  version: 1.0.0
+servers:
+ -
+  url: '{protocol}://{component}.{environment}:{port}/v1/api'
+  variables:
+    environment:
+      default: apps.test.aro.kcbgroup.com
+    component:
+      default: mg-validate-biller
+    protocol:
+      enum:
+       - http
+       - https
+      default: https
+    port:
+      enum:
+       - "443"
+       - "80"
+      default: "443"
+security:
+ -
+  default: []
+tags:
+ -
+  name: validateBiller
+paths:
+  /validateBiller:
+    post:
+      tags:
+       - validateBiller
+      summary: Validate Vooma about billing transaction
+      description: TODO
+      operationId: validateBiller
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/resquestBody'
+      responses:
+        "200":
+          $ref: '#/components/responses/Success'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        default:
+          $ref: '#/components/responses/InternalSeverError'
+      security:
+       -
+        default: []
+      x-auth-type: Application & Application User
+      x-throttling-tier: Unlimited
+      x-wso2-application-security:
+        security-types:
+         - oauth2
+        optional: false
+components:
+  schemas:
+    resquestBody:
+      required:
+       - header
+       - requestPayload
+      type: object
+      properties:
+        header:
+          $ref: '#/components/schemas/request_header'
+        requestPayload:
+          $ref: '#/components/schemas/requestPayload'
+    request_header:
+      required:
+       - channelCode
+       - messageID
+       - originatorConversationID
+      type: object
+      properties:
+        messageID:
+          maxLength: 16
+          minLength: 16
+          type: string
+        originatorConversationID:
+          maxLength: 32
+          minLength: 16
+          type: string
+        channelCode:
+          maxLength: 3
+          minLength: 3
+          type: string
+    requestPayload:
+      required:
+       - aditionalData
+       - primaryData
+      type: object
+      properties:
+        primaryData:
+          $ref: '#/components/schemas/primaryData'
+        aditionalData:
+          $ref: '#/components/schemas/aditionalData'
+    primaryData:
+      required:
+       - businessKey
+       - businessKeyType
+      type: object
+      properties:
+        businessKey:
+          maxLength: 10
+          minLength: 10
+          type: string
+        businessKeyType:
+          maxLength: 10
+          minLength: 10
+          type: string
+    aditionalData:
+      required:
+       - validationData
+      type: object
+      properties:
+        validationData:
+          $ref: '#/components/schemas/validationData'
+    validationData:
+      required:
+       - businessKey
+       - businessKeyType
+      type: object
+      properties:
+        businessKey:
+          maxLength: 10
+          minLength: 10
+          type: string
+        businessKeyType:
+          maxLength: 10
+          minLength: 10
+          type: string
+    responseBody:
+      required:
+       - header
+       - responsePayload
+      type: object
+      properties:
+        header:
+          $ref: '#/components/schemas/response_header'
+        responsePayload:
+          $ref: '#/components/schemas/responsePayload'
+    response_header:
+      required:
+       - channelCode
+       - messageID
+       - originatorConversationID
+       - statusCode
+       - statusMessage
+      type: object
+      properties:
+        messageID:
+          maxLength: 16
+          minLength: 16
+          type: string
+        originatorConversationID:
+          maxLength: 32
+          minLength: 32
+          type: string
+        statusCode:
+          maxLength: 3
+          minLength: 3
+          type: string
+        statusMessage:
+          maxLength: 150
+          type: string
+    responsePayload:
+      required:
+       - transactionInfo
+      type: object
+      properties:
+        transactionInfo:
+          $ref: '#/components/schemas/transactionInfo'
+    transactionInfo:
+      required:
+       - transactionId
+      type: object
+      properties:
+        transactionId:
+          maxLength: 10
+          minLength: 10
+          type: string
+    Error:
+      required:
+       - code
+       - message
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+  responses:
+    InternalSeverError:
+      description: Unexpected error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Success:
+      description: Success
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/responseBody'
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    default:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: ""
+          scopes: {}
+x-wso2-auth-header: Authorization
+x-wso2-cors:
+  corsConfigurationEnabled: false
+  accessControlAllowOrigins:
+   - '*'
+  accessControlAllowCredentials: false
+  accessControlAllowHeaders:
+   - authorization
+   - Access-Control-Allow-Origin
+   - Content-Type
+   - SOAPAction
+  accessControlAllowMethods:
+   - GET
+   - PUT
+   - POST
+   - DELETE
+   - PATCH
+   - OPTIONS
+x-wso2-production-endpoints:
+  urls:
+   - http://localhost:7000
+  type: http
+x-wso2-sandbox-endpoints:
+  urls:
+   - http://localhost:7000
+  type: http
+x-wso2-basePath: /api/1.0.0
+x-wso2-transports:
+ - http
+ - https
+x-wso2-response-cache:
+  enabled: true
+  cacheTimeoutInSeconds: 300
